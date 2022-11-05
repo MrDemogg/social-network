@@ -44,8 +44,12 @@ router.get('/posts/:datetime', (req, res) => {
 
 router.post('/posts', (req, res) => {
   const fsResponse = fsHandler.createPost({name: req.body.name, surname: req.body.surname, message: req.body.message})
+  let code = 500
+  if (fsResponse.errorGuilt === 'user') {
+    code = 400
+  }
   if (fsResponse.error) {
-    res.status(500).send(fsResponse.message)
+    res.status(code).send(fsResponse.message)
   }
 })
 

@@ -80,17 +80,24 @@ const fsHandler = {
     const date = new Date()
     const err = {
       message: null,
-      error: false
+      error: false,
+      errorGuilt: 'server'
     }
-    fs.writeFile(`./server/posts/${date}${post.name}${post.surname}.json`, JSON.stringify({
-      datetime: date,
-      ...post
-    }), error => {
-      if (error) {
-        err.error = true
-        err.message = error.message
-      }
-    })
+    if (post.message && post.message.length > 0) {
+      fs.writeFile(`./server/posts/${date}${post.name}${post.surname}.json`, JSON.stringify({
+        datetime: date,
+        ...post
+      }), error => {
+        if (error) {
+          err.error = true
+          err.message = error.message
+        }
+      })
+    } else {
+      err.error = true
+      err.message = 'В посте пустое сообщение!'
+      err.errorGuilt = 'user'
+    }
     return err
   }
 }
