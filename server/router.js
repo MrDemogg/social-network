@@ -38,7 +38,14 @@ router.get('/posts/:datetime', (req, res) => {
   if (fsResponse.responseType === 'error') {
     res.status(500).send(fsResponse.content.message)
   } else {
-    res.status(200).send(filterByDate(fsResponse.content, req.params.datetime))
+    res.status(200).send(filterByDate(fsResponse.content.datetime, req.params.datetime))
+  }
+})
+
+router.post('/posts', (req, res) => {
+  const fsResponse = fsHandler.createPost({name: req.body.name, surname: req.body.surname, message: req.body.message})
+  if (fsResponse.error) {
+    res.status(500).send(fsResponse.message)
   }
 })
 
