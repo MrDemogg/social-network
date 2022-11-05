@@ -32,31 +32,32 @@ const fsHandler = {
     return {responseType: 'posts', content: posts}
 
   },
-  getProfile: (name, surname) => {
+  getProfile: (name, surname, mail) => {
     let profileExist = false
     fs.readdir('./server/profiles', (err1, files) => {
       if (files) {
         for (let i = 0; i < files.length; i++) {
           fs.readFile('./server/profiles/' + files[i], (err2, data) => {
-            if (JSON.parse(data.toString()).name === name && surname === JSON.parse(data.toString()).surname) {
+            const parsedData = JSON.parse(data.toString())
+            if (parsedData.name === name && surname === parsedData.surname && parsedData.mail === mail) {
               profileExist = true
             }
           })
         }
       } else {
-        fsHandler.createProfile(name, surname)
+        fsHandler.createProfile(name, surname, mail)
         profileExist = true
       }
     })
     if (profileExist) {
       return profileExist
     } else {
-      fsHandler.createProfile(name, surname)
+      fsHandler.createProfile(name, surname, mail)
       return true
     }
   },
-  createProfile: (name, surname) => {
-    fs.writeFile(`./server/profiles/${name}${surname}.json`, JSON.stringify({name: name, surname: surname}), err => {
+  createProfile: (name, surname, mail) => {
+    fs.writeFile(`./server/profiles/${name}${surname}.json`, JSON.stringify({name: name, surname: surname, mail: mail}), err => {
       if (err) {
         console.log(err)
       }

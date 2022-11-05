@@ -3,7 +3,7 @@ const router = express.Router()
 const fsHandler = require('./fsHandler/fsHandler')
 
 router.get('/profile', (req, res) => {
-  const answer = fsHandler.getProfile(req.body.name, req.body.surname)
+  const answer = fsHandler.getProfile(req.body.name, req.body.surname, req.body.mail)
   console.log(answer)
   if (answer) {
     res.status(200).send({login: 'success'})
