@@ -1,33 +1,79 @@
 const fs = require('fs')
 
 const fsHandler = {
-  getProfile: (profile) => {
+  getPosts: () => {
+    const posts = []
+    const err = {
+      message: null,
+      error: false
+    }
+    fs.readdir('./server/posts', (dirErr, files) => {
+      if (dirErr) {
+        err.error = true
+        err.message = dirErr.message
+      } else {
+        if (files) {
+          for (let i = 0; i < files.length; i++) {
+            fs.readFile('./server/profiles' + files[i], (fileErr, data) => {
+              if (fileErr) {
+                err.error = true
+                err.message = fileErr.message
+              } else {
+                posts.push(JSON.parse(data.toString()))
+              }
+            })
+          }
+        }
+      }
+    })
+    if (err.error) {
+      return {responseType: 'error', content: err}
+    }
+    return {responseType: 'posts', content: posts}
+
+  },
+  getProfile: (name, surname) => {
     let profileExist = false
-    fs.readdir('./server/data', (err1, files) => {
+    fs.readdir('./server/profiles', (err1, files) => {
       if (files) {
         for (let i = 0; i < files.length; i++) {
-          fs.readFile('./server/data/' + files[i], (err2, data) => {
-            if (JSON.parse(data.toString()).name === profile.name && profile.surname === JSON.parse(data.toString()).surname) {
+          fs.readFile('./server/profiles/' + files[i], (err2, data) => {
+            if (JSON.parse(data.toString()).name === name && surname === JSON.parse(data.toString()).surname) {
               profileExist = true
             }
           })
         }
       } else {
-        fsHandler.createProfile(profile.name, profile.surname)
+        fsHandler.createProfile(name, surname)
         profileExist = true
       }
     })
     if (profileExist) {
       return profileExist
     } else {
-      fsHandler.createProfile(profile.name, profile.surname)
+      fsHandler.createProfile(name, surname)
       return true
     }
   },
   createProfile: (name, surname) => {
-    fs.writeFile(`./server/data/${name}${surname}.json`, JSON.stringify({name: name, surname: surname}), err => {
-      console.log(err)
+    fs.writeFile(`./server/profiles/${name}${surname}.json`, JSON.stringify({name: name, surname: surname}), err => {
+      if (err) {
+        console.log(err)
+      }
     })
+  },
+  changeProfile: (oldProfile, newProfile) => {
+    fs.unlink(`./server/profiles/${oldProfile.name}${oldProfile.surname}.json`, (err) => {
+      if (err) {
+        console.log(err)
+      }
+    })
+    fs.writeFile(`./server/profiles/${newProfile.name}${newProfile.surname}.json`,
+      JSON.stringify({name: newProfile.name, surname: newProfile.surname}), err => {
+        if (err) {
+          console.log(err)
+        }
+      })
   }
 }
 
