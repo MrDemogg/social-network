@@ -3,7 +3,7 @@ const router = express.Router()
 const fsHandler = require('./fsHandler/fsHandler')
 
 router.get('/profile', (req, res) => {
-  const answer = fsHandler.getProfile(req.body.name, req.body.surname, req.body.mail)
+  const answer = fsHandler.login(req.body)
   console.log(answer)
   if (answer) {
     res.status(200).send({login: 'success'})
@@ -44,7 +44,9 @@ router.get('/posts/:datetime', (req, res) => {
 
 router.post('/posts', (req, res) => {
   const fsResponse = fsHandler.createPost({name: req.body.name, surname: req.body.surname, message: req.body.message})
+
   let code = 500
+
   if (fsResponse.errorGuilt === 'user') {
     code = 400
   }
@@ -52,5 +54,19 @@ router.post('/posts', (req, res) => {
     res.status(code).send(fsResponse.message)
   }
 })
+
+router.post('/subscribe', (req, res) => {
+  const fsResponse = fsHandler.subscribe(req.body.subscribeMail, req.body.name, req.body.surname)
+
+  let code = 500
+
+  if (fsResponse.errorGuilt === 'user') {
+    code = 400
+  }
+  if (fsResponse.error) {
+    res.status(code).send(fsResponse.message)
+  }
+})
+
 
 module.exports = router
