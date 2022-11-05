@@ -73,7 +73,25 @@ const fsHandler = {
         if (err) {
           console.log(err)
         }
-      })
+      }
+    )
+  },
+  createPost: (post) => {
+    const date = new Date()
+    const err = {
+      message: null,
+      error: false
+    }
+    fs.writeFile(`./server/posts/${date}${post.name}${post.surname}.json`, JSON.stringify({
+      datetime: date,
+      ...post
+    }), error => {
+      if (error) {
+        err.error = true
+        err.message = error.message
+      }
+    })
+    return err
   }
 }
 
