@@ -3,70 +3,31 @@ const router = express.Router()
 const fsHandler = require('./fsHandler/fsHandler')
 
 router.get('/profile', (req, res) => {
-  const answer = fsHandler.login(req.body)
-  console.log(answer)
-  if (answer) {
-    res.status(200).send({login: 'success'})
-  } else {
-    res.status(500).send({login: 'fail'})
-  }
+  fsHandler.login(req.body, res)
 })
 
-router.post('/profile', (req) => {
-  fsHandler.changeProfile(req.body.oldProfile, req.body.newProfile)
+router.post('/profile', (req, res) => {
+  fsHandler.changeProfile(req.body.profile, req.body.changes, res)
 })
 
-router.get('/posts', (_, res) => {
-  const fsResponse = fsHandler.getPosts()
-  if (fsResponse.responseType === 'error') {
-    res.status(500).send(fsResponse.content.message)
-  } else {
-    res.status(200).send(fsResponse.content)
-  }
-})
-
-router.get('/posts/:datetime', (req, res) => {
-  const filterByDate = (arr, start) => {
-    start = start ? new Date(start) : null;
-
-    return arr.filter(({ date }) => {
-      date = new Date(date);
-      return !((start && start > date));
-    });
-  };
-  const fsResponse = fsHandler.getPosts()
-  if (fsResponse.responseType === 'error') {
-    res.status(500).send(fsResponse.content.message)
-  } else {
-    res.status(200).send(filterByDate(fsResponse.content.datetime, req.params.datetime))
-  }
+router.get('/posts', (req, res) => {
+  fsHandler.getPosts(req.body.name, req.body.surname, res)
 })
 
 router.post('/posts', (req, res) => {
-  const fsResponse = fsHandler.createPost({name: req.body.name, surname: req.body.surname, message: req.body.message})
-
-  let code = 500
-
-  if (fsResponse.errorGuilt === 'user') {
-    code = 400
-  }
-  if (fsResponse.error) {
-    res.status(code).send(fsResponse.message)
-  }
+  fsHandler.createPost(req.body, res)
 })
 
 router.post('/subscribe', (req, res) => {
-  const fsResponse = fsHandler.subscribe(req.body.subscribeMail, req.body.name, req.body.surname)
-
-  let code = 500
-
-  if (fsResponse.errorGuilt === 'user') {
-    code = 400
-  }
-  if (fsResponse.error) {
-    res.status(code).send(fsResponse.message)
-  }
+  fsHandler.subscribe(req.body.subMail, req.body.name, req.body.surname, res)
 })
 
+router.post('/subscribe/delete', (req, res) => {
+  fsHandler.subscribesDelete(req.body.name, req.body.surname, res)
+})
+
+router.get(`/subscribe`, (req, res) => {
+  fsHandler.getSubscribes(req.body.name, req.body.surname, res)
+})
 
 module.exports = router
