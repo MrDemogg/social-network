@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react'
 import {IProfile} from "../models/IProfile";
+import {IProfileChange} from "../models/IProfileChange";
 
 export const socialAPI = createApi({
   reducerPath: 'postAPI',
@@ -13,6 +14,13 @@ export const socialAPI = createApi({
         body: profile
       }),
       providesTags: result => ['Get']
+    }),
+    changeProfile: build.mutation<string, IProfileChange>({
+      query: (request) => ({
+        url: '/profile',
+        method: 'POST',
+        body: request
+      })
     })
   })
 })
