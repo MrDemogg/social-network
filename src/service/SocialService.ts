@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react'
 import {IProfile} from "../models/IProfile";
 import {IProfileChange} from "../models/IProfileChange";
 import {IGetPosts} from "../models/IGetPosts";
+import {IPostPosts} from "../models/IPostPosts";
 
 export const socialAPI = createApi({
   reducerPath: 'postAPI',
@@ -30,6 +31,14 @@ export const socialAPI = createApi({
         body: profile
       }),
       providesTags: result => ['Post']
+    }),
+    post: build.mutation<string, IPostPosts>({
+      query: (post) => ({
+        url: '/posts',
+        method: 'POST',
+        body: post
+      }),
+      invalidatesTags: ['Post']
     })
   })
 })
