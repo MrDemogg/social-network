@@ -1,13 +1,16 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import socialReducer from './reducers/SocialSlice'
+import {socialAPI} from "../service/SocialService";
 
 const rootReducer = combineReducers({
-  socialReducer
+  socialReducer,
+  [socialAPI.reducerPath]: socialAPI.reducer
 })
 
 export const setupStore = (): any => {
   return configureStore({
-    reducer: rootReducer
+    reducer: rootReducer,
+    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(socialAPI.middleware)
   })
 }
 
