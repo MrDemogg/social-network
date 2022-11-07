@@ -10,7 +10,9 @@ const rootReducer = combineReducers({
 export const setupStore = (): any => {
   return configureStore({
     reducer: rootReducer,
-    middleware: getDefaultMiddleware => getDefaultMiddleware().concat(socialAPI.middleware)
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware()
+        .concat(socialAPI.middleware)
   })
 }
 
