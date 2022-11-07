@@ -6,22 +6,24 @@ import {IPostPosts} from "../models/IPostPosts";
 import {ISubscribe} from "../models/ISubscribe";
 
 export const socialAPI = createApi({
-  reducerPath: 'postAPI',
+  reducerPath: 'socialAPI',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:8000' }),
   tagTypes: ['Post'],
   endpoints: (build) => ({
-    login: build.query<string, IProfile>({
+    login: build.mutation<string, IProfile>({
       query: (profile) => ({
         url: '/profile',
         method: 'GET',
-        body: profile
+        body: profile,
+        responseHandler: (response) => response.text()
       })
     }),
     changeProfile: build.mutation<string, IProfileChange>({
       query: (request) => ({
         url: '/profile',
         method: 'POST',
-        body: request
+        body: request,
+        responseHandler: (response) => response.text()
       }),
       invalidatesTags: ['Post']
     }),
@@ -29,7 +31,8 @@ export const socialAPI = createApi({
       query: (profile) => ({
         url: '/posts',
         method: 'GET',
-        body: profile
+        body: profile,
+        responseHandler: (response) => response.text()
       }),
       providesTags: result => ['Post']
     }),
@@ -37,7 +40,8 @@ export const socialAPI = createApi({
       query: (post) => ({
         url: '/posts',
         method: 'POST',
-        body: post
+        body: post,
+        responseHandler: (response) => response.text()
       }),
       invalidatesTags: ['Post']
     }),
@@ -45,7 +49,8 @@ export const socialAPI = createApi({
       query: (subscribe) => ({
         url: '/subscribe',
         method: 'POST',
-        body: subscribe
+        body: subscribe,
+        responseHandler: (response) => response.text()
       }),
       invalidatesTags: ['Post']
     }),
@@ -53,7 +58,8 @@ export const socialAPI = createApi({
       query: (profile) => ({
         url: '/subscribe/delete',
         method: 'POST',
-        body: profile
+        body: profile,
+        responseHandler: (response) => response.text()
       }),
       invalidatesTags: ['Post']
     }),
@@ -61,7 +67,8 @@ export const socialAPI = createApi({
       query: (profile) => ({
         url: '/subscribe',
         method: 'GET',
-        body: profile
+        body: profile,
+        responseHandler: (response) => response.text()
       })
     })
   })
