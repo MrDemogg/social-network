@@ -45,8 +45,12 @@ const fsHandler = {
   },
   login: (profile, response) => {
     fs.readFile(`./server/profiles/${profile.name}${profile.surname}.json`, (err, data) => {
-      if (!data) fsHandler.createProfile(profile)
-      response.status(200).send('success')
+      if (err) {
+        response.status(400).send('user does not exist')
+      } else {
+        if (!data) fsHandler.createProfile(profile)
+        response.status(200).send('success')
+      }
     })
   },
   subscribe: (subMail, name, surname, response) => {
