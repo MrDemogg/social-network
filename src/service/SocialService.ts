@@ -8,15 +8,15 @@ import {ISubscribe} from "../models/ISubscribe";
 export const socialAPI = createApi({
   reducerPath: 'socialAPI',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:8000' }),
-  tagTypes: ['Post'],
+  tagTypes: ['Req'],
   endpoints: (build) => ({
     login: build.mutation<string, IProfile>({
       query: (profile) => ({
         url: '/profile',
         method: 'GET',
-        body: profile,
-        responseHandler: (response) => response.text()
-      })
+        body: profile
+      }),
+      invalidatesTags: ['Req']
     }),
     changeProfile: build.mutation<string, IProfileChange>({
       query: (request) => ({
@@ -25,7 +25,7 @@ export const socialAPI = createApi({
         body: request,
         responseHandler: (response) => response.text()
       }),
-      invalidatesTags: ['Post']
+      invalidatesTags: ['Req']
     }),
     fetchAllPosts: build.query<IGetPosts, IProfile>({
       query: (profile) => ({
@@ -34,7 +34,7 @@ export const socialAPI = createApi({
         body: profile,
         responseHandler: (response) => response.text()
       }),
-      providesTags: result => ['Post']
+      providesTags: result => ['Req']
     }),
     post: build.mutation<string, IPostPosts>({
       query: (post) => ({
@@ -43,7 +43,7 @@ export const socialAPI = createApi({
         body: post,
         responseHandler: (response) => response.text()
       }),
-      invalidatesTags: ['Post']
+      invalidatesTags: ['Req']
     }),
     subscribe: build.mutation<string, ISubscribe>({
       query: (subscribe) => ({
@@ -52,7 +52,7 @@ export const socialAPI = createApi({
         body: subscribe,
         responseHandler: (response) => response.text()
       }),
-      invalidatesTags: ['Post']
+      invalidatesTags: ['Req']
     }),
     subsDelete: build.mutation<string, IProfile>({
       query: (profile) => ({
@@ -61,7 +61,7 @@ export const socialAPI = createApi({
         body: profile,
         responseHandler: (response) => response.text()
       }),
-      invalidatesTags: ['Post']
+      invalidatesTags: ['Req']
     }),
     fetchAllSubs: build.query<string[], IProfile>({
       query: (profile) => ({
