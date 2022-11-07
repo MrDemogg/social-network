@@ -25,7 +25,7 @@ export const socialAPI = createApi({
       }),
       invalidatesTags: ['Post']
     }),
-    fetchPosts: build.query<IGetPosts, IProfile>({
+    fetchAllPosts: build.query<IGetPosts, IProfile>({
       query: (profile) => ({
         url: '/posts',
         method: 'GET',
@@ -46,6 +46,22 @@ export const socialAPI = createApi({
         url: '/subscribe',
         method: 'POST',
         body: subscribe
+      }),
+      invalidatesTags: ['Post']
+    }),
+    subsDelete: build.mutation<string, IProfile>({
+      query: (profile) => ({
+        url: '/subscribe/delete',
+        method: 'POST',
+        body: profile
+      }),
+      invalidatesTags: ['Post']
+    }),
+    fetchAllSubs: build.query<string[], IProfile>({
+      query: (profile) => ({
+        url: '/subscribe',
+        method: 'GET',
+        body: profile
       })
     })
   })
