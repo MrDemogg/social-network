@@ -3,6 +3,7 @@ import {IProfile} from "../models/IProfile";
 import {IProfileChange} from "../models/IProfileChange";
 import {IGetPosts} from "../models/IGetPosts";
 import {IPostPosts} from "../models/IPostPosts";
+import {ISubscribe} from "../models/ISubscribe";
 
 export const socialAPI = createApi({
   reducerPath: 'postAPI',
@@ -39,6 +40,13 @@ export const socialAPI = createApi({
         body: post
       }),
       invalidatesTags: ['Post']
+    }),
+    subscribe: build.mutation<string, ISubscribe>({
+      query: (subscribe) => ({
+        url: '/subscribe',
+        method: 'POST',
+        body: subscribe
+      })
     })
   })
 })
