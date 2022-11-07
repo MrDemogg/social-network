@@ -5,14 +5,16 @@ interface SocialState {
   name: string,
   surname: string,
   posts: IGetPosts[],
-  error: null | string
+  error: null | string,
+  login: boolean
 }
 
 const initialState: SocialState = {
   name: '',
   surname: '',
   posts: [],
-  error: null
+  error: null,
+  login: false
 }
 
 export const socialSlice = createSlice({
