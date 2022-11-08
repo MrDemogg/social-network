@@ -11,14 +11,14 @@ export const socialAPI = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:8000' }),
   tagTypes: ['Req'],
   endpoints: (build) => ({
-    login: build.mutation<string, ILogin>({
+    profilePost: build.mutation<string, ILogin>({
       query: (profile: ILogin) => ({
         url: '/profile',
         method: 'GET',
         params: {
           name: profile.name,
           surname: profile.surname,
-          mail: profile.mail
+          mail: profile.mail ? profile.mail : null
         },
         responseHandler: (response) => {
           return response.text()
