@@ -39,7 +39,7 @@ const ProfileSettings = () => {
         }
       }
     } else {
-      dispatch(socialSlice.actions.setError(res.message))
+      dispatch(socialSlice.actions.setError(JSON.parse(res.error.data)))
     }
   }
 
@@ -66,7 +66,7 @@ const ProfileSettings = () => {
   const subscribeHandler = () => {
     subscribe({name: name, surname: surname, subMail: inputSubMail}).then((res: any) => {
       if (res.data !== 'success') {
-        dispatch(socialSlice.actions.setError(res.message))
+        dispatch(socialSlice.actions.setError(res.error.data))
       }
     })
   }
