@@ -3,7 +3,7 @@ const router = express.Router()
 const fsHandler = require('./fsHandler/fsHandler')
 
 router.get('/profile', (req, res) => {
-  fsHandler.login(req.body, res)
+  fsHandler.login(req.query.name, req.query.surname, req.query.mail, res)
 })
 
 router.post('/profile', (req, res) => {
@@ -11,7 +11,7 @@ router.post('/profile', (req, res) => {
 })
 
 router.get('/posts', (req, res) => {
-  fsHandler.getPosts(req.body.name, req.body.surname, res)
+  fsHandler.getPosts(req.query.name, req.query.surname, res)
 })
 
 router.post('/posts', (req, res) => {
@@ -27,7 +27,7 @@ router.post('/subscribe/delete', (req, res) => {
 })
 
 router.get(`/subscribe`, (req, res) => {
-  fsHandler.getSubscribes(req.body.name, req.body.surname, res)
+  fsHandler.getSubscribes(req.query.name, req.query.surname, res)
 })
 
 module.exports = router
