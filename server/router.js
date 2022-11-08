@@ -5,9 +5,9 @@ const fsHandler = require('./fsHandler/fsHandler')
 router.get('/profile', (req, res) => {
   console.log(req.query.mail)
   if (req.query.mail !== null) {
-    fsHandler.login(req.query.name, req.query.surname, res, req.query.mail)
+    fsHandler.profileReq(req.query.name, req.query.surname, res, req.query.mail)
   } else {
-    fsHandler.login(req.query.name, req.query.surname, res)
+    fsHandler.profileReq(req.query.name, req.query.surname, res)
   }
 })
 
