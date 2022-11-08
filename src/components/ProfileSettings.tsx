@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Button, Card} from "react-bootstrap";
 import {useAppDispatch, useAppSelector} from "../hooks/redux";
-import {BoxArrowInLeft, PencilSquare} from "react-bootstrap-icons";
+import {BoxArrowInLeft, BoxArrowInRight, PencilSquare, PersonPlusFill} from "react-bootstrap-icons";
 import {socialAPI} from "../service/SocialService";
 import {socialSlice} from "../store/reducers/SocialSlice";
 import CustomModal from "./UI/CustomModal";
@@ -12,12 +12,13 @@ const ProfileSettings = () => {
   const [inputName, setInputName] = useState('')
   const [inputMail, setInputMail] = useState('')
   const [inputSurname, setInputSurname] = useState('')
-  const [profileReq, {}] = socialAPI.useProfilePostMutation()
-  const [changeProfile, {
-
-  }] = socialAPI.useChangeProfileMutation()
+  const [inputSubMail, setInputSubMail] = useState('')
+  const [profileReq] = socialAPI.useProfilePostMutation()
+  const [changeProfile] = socialAPI.useChangeProfileMutation()
+  const [subscribe] = socialAPI.useSubscribeMutation()
   const [loginView, setLoginView] = useState(false)
   const [registerView, setRegisterView] = useState(false)
+  const [followView, setFollowView] = useState(false)
   const dispatch = useAppDispatch()
 
   const localProfileChanges = (res: any, type: string, changes?: IChanges | null) => {
@@ -56,12 +57,28 @@ const ProfileSettings = () => {
     }
   }
 
+  const logoutHandler = () => {
+    dispatch(socialSlice.actions.login(false))
+    dispatch(socialSlice.actions.setName(''))
+    dispatch(socialSlice.actions.setSurname(''))
+  }
+
+  const subscribeHandler = () => {
+    subscribe({name: name, surname: surname, subMail: inputSubMail}).then((res: any) => {
+      if (res.data !== 'success') {
+        dispatch(socialSlice.actions.setError(res.message))
+      }
+    })
+  }
+
   const loginViewHandler = () => setLoginView(!loginView)
   const registerViewHandler = () => setRegisterView(!registerView)
+  const followViewHandler = () => setFollowView(!followView)
 
   const inputNameHandler = (event: React.ChangeEvent<HTMLInputElement>) => setInputName(event.target.value)
   const inputSurnameHandler = (event: React.ChangeEvent<HTMLInputElement>) => setInputSurname(event.target.value)
   const inputMailHandler = (event: React.ChangeEvent<HTMLInputElement>) => setInputMail(event.target.value)
+  const inputSubMailHandler = (event: React.ChangeEvent<HTMLInputElement>) => setInputSubMail(event.target.value)
 
   const loginInputsArr = [
     {
@@ -80,6 +97,43 @@ const ProfileSettings = () => {
 
   return (
     <>
+      <Card.Header>
+        <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '80%', margin: '0 auto'}}>
+          <Card.Title style={{display: 'flex', flexDirection: 'row'}}>
+            {name} {surname}
+            <div style={{marginLeft: 20}}>
+              {login
+                ? <Button
+                    onClick={logoutHandler}
+                  >
+                    <BoxArrowInRight size={30} />
+                  </Button>
+                : <Button
+                    onClick={loginViewHandler}
+                  >
+                    <BoxArrowInLeft size={30} />
+                  </Button>
+              }
+              <Button
+                onClick={registerViewHandler}
+                style={{marginLeft: 20}}
+              >
+                {login
+                  ? <PencilSquare size={30} />
+                  : 'Register'
+                }
+              </Button>
+            </div>
+          </Card.Title>
+          {login
+            && <Button
+                onClick={followViewHandler}
+              >
+                <PersonPlusFill /> Follow User
+              </Button>
+          }
+        </div>
+      </Card.Header>
       <CustomModal
         height={300}
         title={'Login'}
@@ -98,24 +152,21 @@ const ProfileSettings = () => {
         inputs={registerInputsArr}
         success={() => profileHandler(login ? 'edit' : 'register')}
       />
-      <Card.Header>
-        <Card.Title style={{display: 'flex', flexDirection: 'row'}}>
-          {name} {surname}
-          <Button
-            onClick={loginViewHandler}
-          >
-            <BoxArrowInLeft size={30} />
-          </Button>
-          <Button
-            onClick={registerViewHandler}
-          >
-            {login
-              ? <PencilSquare size={30} />
-              : 'Register'
-            }
-          </Button>
-        </Card.Title>
-      </Card.Header>
+      <CustomModal
+        height={230}
+        title={'Follow user'}
+        button={'Follow'}
+        visible={followView}
+        changeVisible={followViewHandler}
+        inputs={[
+          {
+            value: inputSubMail,
+            title: 'Mail:',
+            changeHandler: inputSubMailHandler
+          }
+        ]}
+        success={subscribeHandler}
+      />
     </>
   )
 };
