@@ -26,6 +26,12 @@ export const socialSlice = createSlice({
     },
     setSurname(state, action: PayloadAction<string>) {
       state.surname = action.payload
+    },
+    login(state, action: PayloadAction<boolean>) {
+      state.login = action.payload
+    },
+    setError(state, action: PayloadAction<string>) {
+      state.error = action.payload
     }
   }
 })
