@@ -43,27 +43,24 @@ const fsHandler = {
       }
     })
   },
-  login: (profile, response) => {
-    fs.readFile(`./server/profiles/${profile.name}${profile.surname}.json`, (err, data) => {
-      if (err) {
-        response.status(400).send('user does not exist')
-      } else {
-        if (!data) fsHandler.createProfile(profile)
-        response.status(200).send('success')
+  login: (name, surname, mail, response) => {
+    console.log(name, surname, mail)
+    if (!fs.existsSync(`./server/profiles/${name}${surname}.json`) && fsHandler.validateMail(mail)) {
+      fsHandler.createProfile({name: name, surname: surname, mail: mail})
+    }
+    response.status(200).send('success')
+  },
+  validateMail: (mail) => {
+    const mailTypes = ['@mail.ru', '@yandex.ru', '@gmail.com']
+    let valid = false
+    for (let type in mailTypes) {
+      if (mail.includes(mailTypes[type])) {
+        valid = true
       }
-    })
+    }
+    return valid
   },
   subscribe: (subMail, name, surname, response) => {
-    const validateMail = (mail) => {
-      const mailTypes = ['@mail.ru', '@yandex.ru', '@gmail.com']
-      let valid = false
-      for (let type in mailTypes) {
-        if (mail.includes(mailTypes[type])) {
-          valid = true
-        }
-      }
-      return valid
-    }
     fs.readdir('./server/profiles', (error, files) => {
       if (error) {
         fsHandler.err.message = error.message
@@ -76,7 +73,7 @@ const fsHandler = {
                 fsHandler.err.message = error.message
                 response.status(500).send(fsHandler.err)
               } else {
-                if (validateMail(subMail)) {
+                if (fsHandler.validateMail(subMail)) {
                   if (JSON.parse(data.toString()).mail === subMail) {
                     i = files.length
                     fs.readFile(`./server/profiles/${name}${surname}.json`, (err, fileData) => {
