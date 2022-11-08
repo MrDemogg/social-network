@@ -2,10 +2,11 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import {IGetPosts} from "../../models/IGetPosts";
 
 interface SocialState {
-  name: string,
-  surname: string,
-  posts: IGetPosts[],
-  error: null | string,
+  name: string
+  surname: string
+  posts: IGetPosts[]
+  error: null | string
+  loading: boolean
   login: boolean
 }
 
@@ -14,6 +15,7 @@ const initialState: SocialState = {
   surname: '',
   posts: [],
   error: null,
+  loading: false,
   login: false
 }
 
@@ -32,6 +34,9 @@ export const socialSlice = createSlice({
     },
     setError(state, action: PayloadAction<string>) {
       state.error = action.payload
+    },
+    setLoading(state, action: PayloadAction<boolean>) {
+      state.loading = action.payload
     }
   }
 })
