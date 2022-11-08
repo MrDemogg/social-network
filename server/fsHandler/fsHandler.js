@@ -43,12 +43,25 @@ const fsHandler = {
       }
     })
   },
-  login: (name, surname, mail, response) => {
-    console.log(name, surname, mail)
-    if (!fs.existsSync(`./server/profiles/${name}${surname}.json`) && fsHandler.validateMail(mail)) {
-      fsHandler.createProfile({name: name, surname: surname, mail: mail})
+  profileReq: (name, surname, response, mail) => {
+    if (mail !== null) {
+      if (fs.existsSync(`./server/profiles/${name}${surname}.json`)) {
+        response.status(200).send('success')
+      } else {
+        fsHandler.err.message = 'Mail is not valid'
+        fsHandler.err.errorGuilt = 'user'
+        response.status(400).send(fsHandler.err)
+      }
+    } else {
+      if (!fs.existsSync(`./server/profiles/${name}${surname}.json`) && fsHandler.validateMail(mail)) {
+        fsHandler.createProfile({name: name, surname: surname, mail: mail})
+        response.status(200).send('success')
+      } else {
+        fsHandler.err.message = 'The profile is already in the database'
+        fsHandler.err.errorGuilt = 'user'
+        response.status(400).send(fsHandler.err)
+      }
     }
-    response.status(200).send('success')
   },
   validateMail: (mail) => {
     const mailTypes = ['@mail.ru', '@yandex.ru', '@gmail.com']
@@ -119,6 +132,7 @@ const fsHandler = {
     })
   },
   createProfile: (profile) => {
+    console.log(profile)
     fs.writeFile(`./server/profiles/${profile.name}${profile.surname}.json`, JSON.stringify({...profile, subscribes: []}), err => {
       if (err) {
         console.log(err)
@@ -127,6 +141,7 @@ const fsHandler = {
   },
   changeProfile: (profile, changes, response) => {
     let oldData = {}
+    console.log(profile, changes)
     fs.readFile(`./server/profiles/${profile.name}${profile.surname}.json`, (err, data) => {
       if (err) {
         fsHandler.err.message = err.message
