@@ -44,8 +44,9 @@ const fsHandler = {
     })
   },
   profileReq: (name, surname, response, mail) => {
-    if (mail === null) {
-      if (fs.existsSync(`./server/profiles/${name}${surname}.json`)) {
+    if (mail !== 'null') {
+      if (!fs.existsSync(`./server/profiles/${name}${surname}.json`) && fsHandler.validateMail(mail)) {
+        fsHandler.createProfile({name: name, surname: surname, mail: mail})
         response.status(200).send('success')
       } else {
         fsHandler.err.message = 'Mail is not valid'
@@ -53,8 +54,7 @@ const fsHandler = {
         response.status(400).send(fsHandler.err)
       }
     } else {
-      if (!fs.existsSync(`./server/profiles/${name}${surname}.json`) && fsHandler.validateMail(mail)) {
-        fsHandler.createProfile({name: name, surname: surname, mail: mail})
+      if (fs.existsSync(`./server/profiles/${name}${surname}.json`)) {
         response.status(200).send('success')
       } else {
         fsHandler.err.message = 'The profile is already in the database'
@@ -112,7 +112,7 @@ const fsHandler = {
                       }
                     })
                   } else {
-                    if (i === files.length - 1) {
+                    if (files.length > 1 && i === files.length - 1) {
                       fsHandler.err.message = "Email'а Нет в базе данных"
                       fsHandler.err.errorGuilt = 'user'
                       response.status(400).send(fsHandler.err)
