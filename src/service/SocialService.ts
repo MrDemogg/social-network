@@ -4,17 +4,25 @@ import {IProfileChange} from "../models/IProfileChange";
 import {IGetPosts} from "../models/IGetPosts";
 import {IPostPosts} from "../models/IPostPosts";
 import {ISubscribe} from "../models/ISubscribe";
+import {ILogin} from "../models/ILogin";
 
 export const socialAPI = createApi({
   reducerPath: 'socialAPI',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:8000' }),
   tagTypes: ['Req'],
   endpoints: (build) => ({
-    login: build.mutation<string, IProfile>({
-      query: (profile) => ({
+    login: build.mutation<string, ILogin>({
+      query: (profile: ILogin) => ({
         url: '/profile',
         method: 'GET',
-        body: profile
+        params: {
+          name: profile.name,
+          surname: profile.surname,
+          mail: profile.mail
+        },
+        responseHandler: (response) => {
+          return response.text()
+        }
       }),
       invalidatesTags: ['Req']
     }),
