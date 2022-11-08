@@ -1,6 +1,7 @@
-import React, {FC, ReactNode} from 'react';
+import React, {FC} from 'react';
 import Modal from 'react-bootstrap/Modal';
-import {Button} from "react-bootstrap";
+import {Button, Form, InputGroup} from "react-bootstrap";
+import {IInput} from "../../models/IInput";
 
 interface ModalProps {
   height: string | number
@@ -8,7 +9,7 @@ interface ModalProps {
   button: string
   visible: boolean
   changeVisible: () => void
-  inputs: ReactNode[],
+  inputs: IInput[],
   success: () => void
 }
 
@@ -20,9 +21,13 @@ const CustomModal: FC<ModalProps> = ({height, button, inputs, changeVisible, vis
       </Modal.Header>
       <Modal.Body>
         {inputs.map((input, index) =>
-          <div key={index}>
-            {input}
-          </div>
+          <InputGroup key={index}>
+            <InputGroup.Text>{input.title}</InputGroup.Text>
+            <Form.Control
+              value={input.value}
+              onChange={input.changeHandler}
+            />
+          </InputGroup>
         )}
       </Modal.Body>
       <Modal.Footer>
