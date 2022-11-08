@@ -44,7 +44,7 @@ const fsHandler = {
     })
   },
   profileReq: (name, surname, response, mail) => {
-    if (mail !== null) {
+    if (mail === null) {
       if (fs.existsSync(`./server/profiles/${name}${surname}.json`)) {
         response.status(200).send('success')
       } else {
