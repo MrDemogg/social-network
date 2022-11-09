@@ -5,39 +5,36 @@ const fsHandler = {
     message: null,
     errorGuilt: 'server'
   },
-  getPosts: (name, surname, response) => {
+  getPosts: async (name, surname, response) => {
+    console.log('getPosts')
     const posts = []
-    let profileInfo
-    fs.readFile(`./server/profiles/${name}${surname}.json`, (err, getData) => {
-      profileInfo = JSON.parse(getData.toString())
-    })
-    fs.readdir('./server/posts', (error, files) => {
+    const profileInfo = await JSON.parse(fs.readFileSync(`./server/profiles/${name}${surname}.json`).toString())
+    fs.readdir('./server/posts', async (error, files) => {
       if (error) {
         fsHandler.err.message = error.message
         response.status(500).send(fsHandler.err)
       } else {
         if (files.length > 0) {
-          for (let i = 0; i < files.length; i++) {
-            fs.readFile('./server/posts/' + files[i], (error, data) => {
-              if (error) {
-                fsHandler.err.message = error.message
-                response.status(500).send(fsHandler.err)
-              } else {
-                if (profileInfo.subscribes.includes(JSON.parse(data.toString()).mail) || profileInfo.mail === JSON.parse(data.toString()).mail)
-                  posts.push(JSON.parse(data.toString()))
-                if (i === files.length - 1) {
-                  const sortedArr = posts
-                    .map((n) => [n, new Date(n.date.split(".").reverse().join("-"))])
-                    .sort((a, b) => a[1] - b[1])
-                    .map((n) => n[0])
-                  if (sortedArr.length > 20) {
-                    sortedArr.slice(0, 20)
-                  }
-                  response.status(200).send(sortedArr)
-                }
+          console.log(profileInfo)
+          let i = 0
+          for (i; i < files.length; i++) {
+            try {
+              const data = await fs.readFileSync('./server/posts/' + files[i])
+              if (profileInfo.subscribes.includes(JSON.parse(data.toString()).mail) || profileInfo.mail === JSON.parse(data.toString()).mail) {
+                posts.push(JSON.parse(data.toString()))
               }
-            })
+            } catch (e) {
+              console.log(e)
+            }
           }
+          const sortedArr = posts
+            .map((n) => [n, new Date(n.date.split(".").reverse().join("-"))])
+            .sort((a, b) => a[1] - b[1])
+            .map((n) => n[0])
+          if (sortedArr.length > 20) {
+            sortedArr.slice(0, 20)
+          }
+          response.status(200).send(sortedArr)
         } else {
           response.status(200).send([])
         }
@@ -45,6 +42,7 @@ const fsHandler = {
     })
   },
   profileReq: (name, surname, response, mail) => {
+    console.log('profileReq')
     if (mail !== 'null') {
       if (!fs.existsSync(`./server/profiles/${name}${surname}.json`) && fsHandler.validateMail(mail)) {
         fsHandler.createProfile({name: name, surname: surname, mail: mail})
@@ -79,6 +77,7 @@ const fsHandler = {
     return valid
   },
   subscribe: (subMail, name, surname, response) => {
+    console.log('subscribe')
     fs.readdir('./server/profiles', (error, files) => {
       if (error) {
         fsHandler.err.message = error.message
@@ -100,25 +99,27 @@ const fsHandler = {
                         response.status(500).send(fsHandler.err)
                       } else {
                         const data = JSON.parse(fileData.toString())
-                        if (data.subscribes.includes(subMail)) {
-                          data.subscribes = data.subscribes.filter(sub => sub !== subMail)
-                        } else {
-                          data.subscribes = [...data.subscribes, subMail]
+                        if (data.name !== name && data.surname !== surname) {
+                          if (data.subscribes.includes(subMail)) {
+                            data.subscribes = data.subscribes.filter(sub => sub !== subMail)
+                          } else {
+                            data.subscribes = [...data.subscribes, subMail]
+                          }
+                          fs.writeFile(`./server/profiles/${name}${surname}.json`,
+                            JSON.stringify(data), err => {
+                              if (err) {
+                                fsHandler.err.message = err.message
+                                response.status(500).send(fsHandler.err)
+                              } else {
+                                response.status(200).send('success')
+                              }
+                          })
                         }
-                        fs.writeFile(`./server/profiles/${name}${surname}.json`,
-                          JSON.stringify(data), err => {
-                            if (err) {
-                              fsHandler.err.message = err.message
-                              response.status(500).send(fsHandler.err)
-                            } else {
-                              response.status(200).send('success')
-                            }
-                        })
                       }
                     })
                   } else {
-                    if (files.length > 1 && i === files.length - 1) {
-                      fsHandler.err.message = "Email'а Нет в базе данных"
+                    if (i === files.length - 1) {
+                      fsHandler.err.message = "Email'а Нет в базе данных или вы пытаетесь подписаться на самого себя"
                       fsHandler.err.errorGuilt = 'user'
                       response.status(400).send(fsHandler.err)
                     }
@@ -137,7 +138,7 @@ const fsHandler = {
     })
   },
   createProfile: (profile) => {
-    console.log(profile)
+    console.log('createProfile')
     fs.writeFile(`./server/profiles/${profile.name}${profile.surname}.json`, JSON.stringify({...profile, subscribes: []}), err => {
       if (err) {
         console.log(err)
@@ -145,6 +146,7 @@ const fsHandler = {
     })
   },
   changeProfile: (profile, changes, response) => {
+    console.log('changeProfile')
     let profileOldData = {}
     fs.readFile(`./server/profiles/${profile.name}${profile.surname}.json`, (err, data) => {
       if (err) {
@@ -213,30 +215,35 @@ const fsHandler = {
                         response.status(500).send(fsHandler.err)
                       } else {
                         for (let i = 0; i < files.length; i++) {
-                          fs.readFile(`./server/posts/` + files[i], (err, data) => {
+                          console.log(i)
+                          fs.readFile('./server/posts/'+ files[i], (err, data) => {
                             if (err) {
                               fsHandler.err.message = err.message
                               response.status(500).send(fsHandler.err)
                             } else {
                               const oldData = JSON.parse(data.toString())
-                              const newFileData = {...oldData}
-                              if (changes.name !== profileOldData.name) {
-                                newFileData.name = changes.name
-                              }
-                              if (changes.surname !== profileOldData.surname) {
-                                newFileData.surname = changes.surname
-                              }
-                              if (changes.mail !== profileOldData.mail) {
-                                newFileData.mail = changes.mail
-                              }
-                              fs.writeFile(`./server/posts/` + files[i], JSON.stringify(newFileData), err => {
-                                if (err) {
-                                  fsHandler.err.message = err.message
-                                  response.status(500).send(fsHandler.err)
-                                } else {
-                                  response.status(200).send('success')
+                              if (oldData.name === profileOldData.name && oldData.surname === profileOldData.surname) {
+                                const newFileData = {...oldData}
+                                console.log(newFileData)
+                                if (changes.name !== profileOldData.name && changes.name) {
+                                  newFileData.name = changes.name
                                 }
-                              })
+                                if (changes.surname !== profileOldData.surname && changes.surname) {
+                                  newFileData.surname = changes.surname
+                                }
+                                if (changes.mail !== profileOldData.mail && changes.mail) {
+                                  console.log(newFileData.mail, changes.mail)
+                                  newFileData.mail = changes.mail
+                                }
+                                fs.writeFile('./server/posts/' + files[i], JSON.stringify(newFileData), err => {
+                                  if (err) {
+                                    fsHandler.err.message = err.message
+                                    response.status(500).send(fsHandler.err)
+                                  } else {
+                                    response.status(200).send('success')
+                                  }
+                                })
+                              }
                             }
                           })
                         }
@@ -257,6 +264,7 @@ const fsHandler = {
     })
   },
   createPost: (post, response) => {
+    console.log('createPost')
     const addZero = (datetime, variant = 0) => {
       const strDatetime = `${datetime}`
       if (variant === 1) {
@@ -304,6 +312,7 @@ const fsHandler = {
     }
   },
   subscribesDelete: (name, surname, response) => {
+    console.log('subscribesDelete')
     fs.readFile(`./server/profiles/${name}${surname}.json`, (error, data) => {
       if (error) {
         fsHandler.err.message = error.message
@@ -325,6 +334,7 @@ const fsHandler = {
     })
   },
   getSubscribes: (name, surname, response) => {
+    console.log('getSubscribes')
     fs.readFile(`./server/profiles/${name}${surname}.json`, (error, data) => {
       if (error) {
         fsHandler.err.message = error.message
