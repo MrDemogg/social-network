@@ -135,7 +135,7 @@ const ProfileSettings = () => {
         </div>
       </Card.Header>
       <CustomModal
-        height={300}
+        height={330}
         title={'Login'}
         button={'Login'}
         visible={loginView}
@@ -144,7 +144,7 @@ const ProfileSettings = () => {
         success={() => profileHandler('login')}
       />
       <CustomModal
-        height={300}
+        height={330}
         title={login ? 'Edit Profile' : 'Registration'}
         button={login ? 'Edit' : 'Register'}
         visible={registerView}
@@ -153,7 +153,7 @@ const ProfileSettings = () => {
         success={() => profileHandler(login ? 'edit' : 'register')}
       />
       <CustomModal
-        height={230}
+        height={250}
         title={'Follow / Unfollow user'}
         button={'Follow / Unfollow'}
         visible={followView}
