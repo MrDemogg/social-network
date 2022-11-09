@@ -21,7 +21,7 @@ const CustomModal: FC<ModalProps> = ({height, button, inputs, changeVisible, vis
       </Modal.Header>
       <Modal.Body>
         {inputs.map((input, index) =>
-          <InputGroup key={index}>
+          <InputGroup key={index} style={{marginTop: 10}}>
             <InputGroup.Text>{input.title}</InputGroup.Text>
             <Form.Control
               value={input.value}
