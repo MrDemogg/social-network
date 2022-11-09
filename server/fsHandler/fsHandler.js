@@ -23,7 +23,8 @@ const fsHandler = {
                 fsHandler.err.message = error.message
                 response.status(500).send(fsHandler.err)
               } else {
-                if (profileInfo.subscribes.includes(JSON.parse(data.toString()).mail)) posts.push(JSON.parse(data.toString()))
+                if (profileInfo.subscribes.includes(JSON.parse(data.toString()).mail) || profileInfo.mail === JSON.parse(data.toString()).mail)
+                  posts.push(JSON.parse(data.toString()))
                 if (i === files.length - 1) {
                   const sortedArr = posts
                     .map((n) => [n, new Date(n.date.split(".").reverse().join("-"))])
@@ -144,25 +145,23 @@ const fsHandler = {
     })
   },
   changeProfile: (profile, changes, response) => {
-    let oldData = {}
-    console.log(profile, changes)
+    let profileOldData = {}
     fs.readFile(`./server/profiles/${profile.name}${profile.surname}.json`, (err, data) => {
       if (err) {
         fsHandler.err.message = err.message
         response.status(400).send(fsHandler.err)
       } else {
-        oldData = JSON.parse(data.toString())
-        console.log(JSON.parse(data.toString()))
+        profileOldData = JSON.parse(data.toString())
         fs.unlink(`./server/profiles/${profile.name}${profile.surname}.json`, (err) => {
           if (err) {
             fsHandler.err.message = err.message
             response.status(500).send(fsHandler.err)
           } else {
             const newData = {
-              name: changes.name ? changes.name : oldData.name,
-              surname: changes.surname ? changes.surname : oldData.surname,
-              mail: changes.mail ? changes.mail : oldData.mail,
-              subscribes: oldData.subscribes.filter(anyMail => anyMail !== oldData.mail)
+              name: changes.name ? changes.name : profileOldData.name,
+              surname: changes.surname ? changes.surname : profileOldData.surname,
+              mail: changes.mail ? changes.mail : profileOldData.mail,
+              subscribes: profileOldData.subscribes.filter(anyMail => anyMail !== profileOldData.mail)
             }
             fs.writeFile(`./server/profiles/${newData.name}${newData.surname}.json`,
               JSON.stringify(newData), err => {
@@ -170,7 +169,85 @@ const fsHandler = {
                   fsHandler.err.message = err.message
                   response.status(500).send(fsHandler.err)
                 } else {
-                  response.status(200).send('success')
+                  let withoutChanges1 = false
+                  let withoutChanges2 = false
+                  if (changes.mail) {
+                    fs.readdir(`./server/profiles`, (err, files) => {
+                      if (err) {
+                        fsHandler.err.message = err.message
+                        response.status(500).send(fsHandler.err)
+                      } else {
+                        for (let i = 0; i < files.length; i++) {
+                          fs.readFile(`./server/profiles/` + files[i], (err, data) => {
+                            if (err) {
+                              fsHandler.err.message = err.message
+                              response.status(500).send(fsHandler.err)
+                            } else {
+                              const oldData = JSON.parse(data.toString())
+                              const newSubscribes = [...oldData.subscribes.filter(sub => sub !== profileOldData.mail), changes.mail]
+                              if (oldData.subscribes.includes(profileOldData.mail)) {
+                                fs.writeFile(`./server/profiles/${oldData.name}${oldData.surname}.json`,
+                                  JSON.stringify({...oldData, subscribes: newSubscribes}),
+                                  err => {
+                                    if (err) {
+                                      fsHandler.err.message = err.message
+                                      response.status(500).send(fsHandler.err)
+                                    } else if (files.length - 1 === i) {
+                                      response.status(200).send('success')
+                                    }
+                                  }
+                                )
+                              }
+                            }
+                          })
+                        }
+                      }
+                    })
+                  } else {
+                    withoutChanges1 = true
+                  }
+                  if (changes.name && changes.name !== profileOldData.name || changes.surname && changes.surname !== profileOldData.surname || changes.mail !== profileOldData.mail) {
+                    fs.readdir(`./server/posts`, (err, files) => {
+                      if (err) {
+                        fsHandler.err.message = err.message
+                        response.status(500).send(fsHandler.err)
+                      } else {
+                        for (let i = 0; i < files.length; i++) {
+                          fs.readFile(`./server/posts/` + files[i], (err, data) => {
+                            if (err) {
+                              fsHandler.err.message = err.message
+                              response.status(500).send(fsHandler.err)
+                            } else {
+                              const oldData = JSON.parse(data.toString())
+                              const newFileData = {...oldData}
+                              if (changes.name !== profileOldData.name) {
+                                newFileData.name = changes.name
+                              }
+                              if (changes.surname !== profileOldData.surname) {
+                                newFileData.surname = changes.surname
+                              }
+                              if (changes.mail !== profileOldData.mail) {
+                                newFileData.mail = changes.mail
+                              }
+                              fs.writeFile(`./server/posts/` + files[i], JSON.stringify(newFileData), err => {
+                                if (err) {
+                                  fsHandler.err.message = err.message
+                                  response.status(500).send(fsHandler.err)
+                                } else {
+                                  response.status(200).send('success')
+                                }
+                              })
+                            }
+                          })
+                        }
+                      }
+                    })
+                  } else {
+                    withoutChanges2 = true
+                  }
+                  if (withoutChanges1 && withoutChanges2) {
+                    response.status(200).send('success')
+                  }
                 }
               }
             )
