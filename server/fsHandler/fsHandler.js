@@ -49,7 +49,11 @@ const fsHandler = {
         fsHandler.createProfile({name: name, surname: surname, mail: mail})
         response.status(200).send('success')
       } else {
-        fsHandler.err.message = 'The profile is already in the database'
+        if (fsHandler.validateMail(mail)) {
+          fsHandler.err.message = 'The profile is already in the database'
+        } else {
+          fsHandler.err.message = 'Mail is not valid'
+        }
         fsHandler.err.errorGuilt = 'user'
         response.status(400).send(fsHandler.err)
       }
@@ -57,7 +61,7 @@ const fsHandler = {
       if (fs.existsSync(`./server/profiles/${name}${surname}.json`)) {
         response.status(200).send('success')
       } else {
-        fsHandler.err.message = 'Mail is not valid'
+        fsHandler.err.message = 'Profile is not exist'
         fsHandler.err.errorGuilt = 'user'
         response.status(400).send(fsHandler.err)
       }
