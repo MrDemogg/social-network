@@ -199,7 +199,10 @@ const ProfileSettings = () => {
             changeHandler: inputSubMailHandler
           }
         ]}
-        success={subscribeHandler}
+        success={(e) => {
+          e?.stopPropagation()
+          subscribeHandler()
+        }}
       />
     </>
   )
