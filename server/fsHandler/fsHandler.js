@@ -22,11 +22,12 @@ const fsHandler = {
                 posts.push(JSON.parse(data.toString()))
               }
             } catch (e) {
-              console.log(e)
+              fsHandler.err.message = e.message
+              response.status(500).send(fsHandler.err)
             }
           }
           const sortedPosts = posts.sort((a, b) => {
-            return new Date(a.date)-new Date(b.date);
+            return new Date(b.date)-new Date(a.date);
           });
           response.status(200).send(sortedPosts)
         } else {
@@ -70,60 +71,50 @@ const fsHandler = {
     }
     return valid
   },
-  subscribe: (subMail, name, surname, response) => {
+  subscribe: async (subMail, name, surname, response) => {
     console.log('subscribe')
-    fs.readdir('./server/profiles', (error, files) => {
+    let profileData = await JSON.parse(fs.readFileSync(`./server/profiles/${name}${surname}.json`).toString())
+    fs.readdir('./server/profiles', async (error, files) => {
       if (error) {
         fsHandler.err.message = error.message
         response.status(500).send(fsHandler.err)
       } else {
         if (files) {
           for (let i = 0; i < files.length; i++) {
-            fs.readFile('./server/profiles/' + files[i], (error, data) => {
-              if (error) {
-                fsHandler.err.message = error.message
-                response.status(500).send(fsHandler.err)
+            try {
+              const JsonFileData = await fs.readFileSync('./server/profiles/' + files[i])
+              const fileData = JSON.parse(JsonFileData.toString())
+              if (fileData.mail === subMail && profileData.subscribes.includes(subMail)) {
+                profileData = {...profileData, subscribes: [...profileData.subscribes.filter(sub => sub !== subMail)]}
+                await fs.writeFileSync(`./server/profiles/${name}${surname}.json`, JSON.stringify(profileData))
+                response.status(200).send('success')
+                break;
               } else {
                 if (fsHandler.validateMail(subMail)) {
-                  if (JSON.parse(data.toString()).mail === subMail) {
-                    i = files.length
-                    fs.readFile(`./server/profiles/${name}${surname}.json`, (err, fileData) => {
-                      if (err) {
-                        fsHandler.err.message = err.message
-                        response.status(500).send(fsHandler.err)
-                      } else {
-                        const data = JSON.parse(fileData.toString())
-                        if (data.name !== name && data.surname !== surname) {
-                          if (data.subscribes.includes(subMail)) {
-                            data.subscribes = data.subscribes.filter(sub => sub !== subMail)
-                          } else {
-                            data.subscribes = [...data.subscribes, subMail]
-                          }
-                          fs.writeFile(`./server/profiles/${name}${surname}.json`,
-                            JSON.stringify(data), err => {
-                              if (err) {
-                                fsHandler.err.message = err.message
-                                response.status(500).send(fsHandler.err)
-                              } else {
-                                response.status(200).send('success')
-                              }
-                          })
-                        }
-                      }
-                    })
-                  } else if (i === files.length - 1) {
-                    fsHandler.err.message = "Email'а Нет в базе данных или вы пытаетесь подписаться или отписаться на или от самого себя"
+                  if (fileData.name !== name || fileData.name !== surname) {
+                    if (fileData.mail === subMail) {
+                      profileData = {...profileData, subscribes: [...profileData.subscribes, subMail]}
+                      await fs.writeFileSync(`./server/profiles/${name}${surname}.json`, JSON.stringify(profileData))
+                      response.status(200).send('success')
+                      break;
+                    }
+                  } else {
+                    fsHandler.err.message = 'Вы пытаетесь подписаться на самого себя'
                     fsHandler.err.errorGuilt = 'user'
                     response.status(400).send(fsHandler.err)
+                    break;
                   }
                 } else {
-                  i = files.length
-                  fsHandler.err.message = 'Невалидный email'
+                  fsHandler.err.message = 'Невалидная почта'
                   fsHandler.err.errorGuilt = 'user'
                   response.status(400).send(fsHandler.err)
+                  break;
                 }
               }
-            })
+            } catch (e) {
+              fsHandler.err.message = e.message
+              response.status(500).send(fsHandler.err)
+            }
           }
         }
       }
