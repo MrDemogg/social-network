@@ -4,6 +4,7 @@ import {useAppDispatch, useAppSelector} from "../hooks/redux";
 import {Comment} from "react-loader-spinner";
 import {socialAPI} from "../service/SocialService";
 import {socialSlice} from "../store/reducers/SocialSlice";
+import Subscribes from "./Subscribes";
 
 const Posts = () => {
   const [newPostTextInput, setNewPostTextInput] = useState('')
@@ -46,55 +47,62 @@ const Posts = () => {
   return (
     <>
       {login
-       && <Card.Body>
-          <div style={{width: '80%', margin: '0 auto'}}>
-            <div style={{width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-              <InputGroup style={{width: '95%'}}>
-                <Form.Control
-                  value={newPostTextInput}
-                  onChange={newPostInputHandler}
-                  placeholder={"What's happening?"}
-                />
-              </InputGroup>
-              <Button
-                onClick={postHandler}
-              >
-                Post
-              </Button>
+       && <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '80%', margin: '0 auto'}}>
+            <Card.Body style={{height: 600}}>
+            <div style={{width: '80%', margin: '0 auto'}}>
+              <div style={{width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                <InputGroup style={{width: '95%'}}>
+                  <Form.Control
+                    value={newPostTextInput}
+                    onChange={newPostInputHandler}
+                    placeholder={"What's happening?"}
+                  />
+                </InputGroup>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    postHandler()
+                  }}
+                  style={{marginLeft: 20}}
+                >
+                  Post
+                </Button>
+              </div>
+              <Card style={{marginTop: 20}}>
+                <Card.Body style={{maxHeight: 500, overflowY: 'scroll'}}>
+                  {
+                    loading && <div style={{margin: '0 auto', width: 80}}><Comment
+                      visible={loading}
+                      height={'80'}
+                      width={'80'}
+                      backgroundColor="#3d2dd345"
+                      color={'#fff'}
+                    /></div>
+                  }
+                  {posts && posts.length > 0
+                    ? posts.map(post =>
+                      <Card key={`${"id" + Math.random().toString(16).slice(2)}${post.name}${post.surname}`} style={{width: '95%', margin: '10px auto'}}>
+                        <Card.Header>
+                          <Card.Title>{post.name} {post.surname} said:</Card.Title>
+                        </Card.Header>
+                        <Card.Body>
+                          <Card.Text>{post.message}</Card.Text>
+                        </Card.Body>
+                        <Card.Footer>
+                          <div style={{width: '80%', margin: '0 auto', display: 'flex', justifyContent: 'space-between'}}>
+                            <Card.Text>User mail: {post.mail}</Card.Text>
+                            <Card.Text>Post date: {post.date.slice(0, 10)}</Card.Text>
+                          </div>
+                        </Card.Footer>
+                      </Card>)
+                    : !loading && <Card.Title style={{textAlign: 'center'}}>Постов пока нет, либо вы ещё ни на кого не подписались</Card.Title>
+                  }
+                </Card.Body>
+              </Card>
             </div>
-            <Card style={{marginTop: 20}}>
-              <Card.Body style={{maxHeight: 500, overflowY: 'scroll'}}>
-                {
-                  loading && <div style={{margin: '0 auto', width: 80}}><Comment
-                    visible={loading}
-                    height={'80'}
-                    width={'80'}
-                    backgroundColor="#3d2dd345"
-                    color={'#fff'}
-                  /></div>
-                }
-                {posts && posts.length > 0
-                  ? posts.map(post =>
-                    <Card key={`${"id" + Math.random().toString(16).slice(2)}${post.name}${post.surname}`} style={{width: '95%', margin: '10px auto'}}>
-                      <Card.Header>
-                        <Card.Title>{post.name} {post.surname} said:</Card.Title>
-                      </Card.Header>
-                      <Card.Body>
-                        <Card.Text>{post.message}</Card.Text>
-                      </Card.Body>
-                      <Card.Footer>
-                        <div style={{width: '80%', margin: '0 auto', display: 'flex', justifyContent: 'space-between'}}>
-                          <Card.Text>User mail: {post.mail}</Card.Text>
-                          <Card.Text>Post date: {post.date.slice(0, 10)}</Card.Text>
-                        </div>
-                      </Card.Footer>
-                    </Card>)
-                  : !loading && <Card.Title style={{textAlign: 'center'}}>Постов пока нет, либо вы ещё ни на кого не подписались</Card.Title>
-                }
-              </Card.Body>
-            </Card>
-          </div>
-        </Card.Body>
+          </Card.Body>
+          <Subscribes />
+        </div>
       }
     </>
   );
