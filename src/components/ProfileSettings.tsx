@@ -16,10 +16,26 @@ const ProfileSettings = () => {
   const [profileReq] = socialAPI.useProfilePostMutation()
   const [changeProfile] = socialAPI.useChangeProfileMutation()
   const [subscribe] = socialAPI.useSubscribeMutation()
+  const [fetchPosts] = socialAPI.useFetchAllPostsMutation()
   const [loginView, setLoginView] = useState(false)
   const [registerView, setRegisterView] = useState(false)
   const [followView, setFollowView] = useState(false)
   const dispatch = useAppDispatch()
+
+  const getPostsHandler = () => {
+    if (login) {
+      dispatch(socialSlice.actions.setLoading(true))
+      fetchPosts({name: name, surname: surname}).then((res: any) => {
+        console.log(res)
+        dispatch(socialSlice.actions.setLoading(false))
+        if (JSON.parse(res.error.data)) {
+          dispatch(socialSlice.actions.setError(JSON.parse(res.error.data)))
+        } else {
+          dispatch(socialSlice.actions.setPosts(JSON.parse(res.data)))
+        }
+      })
+    }
+  }
 
   const localProfileChanges = (res: any, type: string, changes?: IChanges | null) => {
     if (res.data === 'success') {
@@ -51,9 +67,23 @@ const ProfileSettings = () => {
       mail: inputMail === '' ? undefined : inputMail
     }
     if (type === 'login' || type === 'register') {
-      profileReq(profile).then((res: any) => localProfileChanges(res, type, null))
+      profileReq(profile).then((res: any) => {
+        if (res.data !== 'success') {
+          dispatch(socialSlice.actions.setError(JSON.parse(res.error.data) ? JSON.parse(res.error.data) : res.error.error))
+        } else {
+          localProfileChanges(res, type, null)
+        }
+      })
     } else {
-      changeProfile({profile: {surname: surname, name: name}, changes: changes}).then((res: any) => localProfileChanges(res, type, changes))
+      getPostsHandler()
+      changeProfile({profile: {surname: surname, name: name}, changes: changes}).then((res: any) => {
+        console.log(res)
+        if (res.data !== 'success') {
+          dispatch(socialSlice.actions.setError(JSON.parse(res)))
+        } else {
+          localProfileChanges(res, type, changes)
+        }
+      })
     }
   }
 
@@ -66,7 +96,9 @@ const ProfileSettings = () => {
   const subscribeHandler = () => {
     subscribe({name: name, surname: surname, subMail: inputSubMail}).then((res: any) => {
       if (res.data !== 'success') {
-        dispatch(socialSlice.actions.setError(JSON.parse(res.error.data)))
+        dispatch(socialSlice.actions.setError(JSON.parse(res.error.data) ? JSON.parse(res.error.data) : res.error.error))
+      } else {
+        getPostsHandler()
       }
     })
   }
