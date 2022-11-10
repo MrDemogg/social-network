@@ -9,6 +9,7 @@ import {IProfilePost} from "../models/IProfilePost";
 export const socialAPI = createApi({
   reducerPath: 'socialAPI',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:8000' }),
+  tagTypes: ['Sub'],
   endpoints: (build) => ({
     profilePost: build.mutation<string, IProfilePost>({
       query: (profile: IProfilePost) => ({
@@ -55,7 +56,8 @@ export const socialAPI = createApi({
         method: 'POST',
         body: subscribe,
         responseHandler: (response) => response.text()
-      })
+      }),
+      invalidatesTags: ['Sub']
     }),
     subsDelete: build.mutation<string, IProfile>({
       query: (profile) => ({
@@ -63,15 +65,20 @@ export const socialAPI = createApi({
         method: 'POST',
         body: profile,
         responseHandler: (response) => response.text()
-      })
+      }),
+      invalidatesTags: ['Sub']
     }),
     fetchAllSubs: build.query<string[], IProfile>({
       query: (profile) => ({
         url: '/subscribe',
         method: 'GET',
-        body: profile,
-        responseHandler: (response) => response.text()
-      })
+        params: {
+          name: profile.name,
+          surname: profile.surname
+        },
+        responseHandler: (response) => response.json()
+      }),
+      providesTags: result => ['Sub']
     })
   })
 })
