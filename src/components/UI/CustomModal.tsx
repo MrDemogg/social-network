@@ -10,7 +10,7 @@ interface ModalProps {
   visible: boolean
   changeVisible: () => void
   inputs: IInput[],
-  success: () => void
+  success: (e?: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 const CustomModal: FC<ModalProps> = ({height, button, inputs, changeVisible, visible, title, success}) => {
