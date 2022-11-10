@@ -8,7 +8,7 @@ import CustomModal from "./UI/CustomModal";
 import {IChanges} from "../models/IChanges";
 
 const ProfileSettings = () => {
-  const {name, surname, login} = useAppSelector(state => state.socialReducer)
+  const {name, surname, login, errorInfo} = useAppSelector(state => state.socialReducer)
   const [inputName, setInputName] = useState('')
   const [inputMail, setInputMail] = useState('')
   const [inputSurname, setInputSurname] = useState('')
@@ -22,16 +22,16 @@ const ProfileSettings = () => {
   const [followView, setFollowView] = useState(false)
   const dispatch = useAppDispatch()
 
-  const getPostsHandler = () => {
+  const getPostsHandler = (anotherName?: string, anotherSurname?: string) => {
     if (login) {
       dispatch(socialSlice.actions.setLoading(true))
-      fetchPosts({name: name, surname: surname}).then((res: any) => {
+      fetchPosts({name: anotherName ? anotherName : name, surname: anotherSurname ? anotherSurname : surname}).then((res: any) => {
         console.log(res)
         dispatch(socialSlice.actions.setLoading(false))
-        if (JSON.parse(res.error.data)) {
-          dispatch(socialSlice.actions.setError(JSON.parse(res.error.data)))
-        } else {
+        if (res.data) {
           dispatch(socialSlice.actions.setPosts(JSON.parse(res.data)))
+        } else {
+          dispatch(socialSlice.actions.setError({...errorInfo, message: res.error.error}))
         }
       })
     }
@@ -68,8 +68,9 @@ const ProfileSettings = () => {
     }
     if (type === 'login' || type === 'register') {
       profileReq(profile).then((res: any) => {
+        console.log(res)
         if (res.data !== 'success') {
-          dispatch(socialSlice.actions.setError(JSON.parse(res.error.data) ? JSON.parse(res.error.data) : res.error.error))
+          dispatch(socialSlice.actions.setError(JSON.parse(res)))
         } else {
           localProfileChanges(res, type, null)
         }
@@ -82,6 +83,7 @@ const ProfileSettings = () => {
           dispatch(socialSlice.actions.setError(JSON.parse(res)))
         } else {
           localProfileChanges(res, type, changes)
+          getPostsHandler(inputName, inputSurname)
         }
       })
     }
