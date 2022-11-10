@@ -14,10 +14,8 @@ const fsHandler = {
         fsHandler.err.message = error.message
         response.status(500).send(fsHandler.err)
       } else {
-        if (files.length > 0) {
-          console.log(profileInfo)
-          let i = 0
-          for (i; i < files.length; i++) {
+        if (files.length !== 0) {
+          for (let i = 0; i < files.length; i++) {
             try {
               const data = await fs.readFileSync('./server/posts/' + files[i])
               if (profileInfo.subscribes.includes(JSON.parse(data.toString()).mail) || profileInfo.mail === JSON.parse(data.toString()).mail) {
@@ -27,14 +25,10 @@ const fsHandler = {
               console.log(e)
             }
           }
-          const sortedArr = posts
-            .map((n) => [n, new Date(n.date.split(".").reverse().join("-"))])
-            .sort((a, b) => a[1] - b[1])
-            .map((n) => n[0])
-          if (sortedArr.length > 20) {
-            sortedArr.slice(0, 20)
-          }
-          response.status(200).send(sortedArr)
+          const sortedPosts = posts.sort((a, b) => {
+            return new Date(a.date)-new Date(b.date);
+          });
+          response.status(200).send(sortedPosts)
         } else {
           response.status(200).send([])
         }
@@ -117,12 +111,10 @@ const fsHandler = {
                         }
                       }
                     })
-                  } else {
-                    if (i === files.length - 1) {
-                      fsHandler.err.message = "Email'а Нет в базе данных или вы пытаетесь подписаться на самого себя"
-                      fsHandler.err.errorGuilt = 'user'
-                      response.status(400).send(fsHandler.err)
-                    }
+                  } else if (i === files.length - 1) {
+                    fsHandler.err.message = "Email'а Нет в базе данных или вы пытаетесь подписаться или отписаться на или от самого себя"
+                    fsHandler.err.errorGuilt = 'user'
+                    response.status(400).send(fsHandler.err)
                   }
                 } else {
                   i = files.length
@@ -281,8 +273,8 @@ const fsHandler = {
       return datetime
     }
     const date = new Date
-    const dataDate = `${addZero(date.getDate())}.${addZero(date.getMonth())}.${date.getFullYear()}`
-    const fileDate = `${dataDate}T${addZero(date.getHours())}-${addZero(date.getMinutes())}-${addZero(date.getSeconds())}.${addZero(date.getMilliseconds())}`
+    const dataDate = new Date().toISOString()
+    const fileDate = `${date.getFullYear()}-${addZero(date.getMonth())}-${addZero(date.getDate())}T${addZero(date.getHours())}-${addZero(date.getMinutes())}-${addZero(date.getSeconds())}.${addZero(date.getMilliseconds())}`
     if (post.message) {
       fs.readFile(`./server/profiles/${post.name}${post.surname}.json`, (err, data) => {
         if (err) {
