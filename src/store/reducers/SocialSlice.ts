@@ -1,26 +1,26 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import {IGetPosts} from "../../models/IGetPosts";
 import {IError} from "../../models/IError";
+import {IGetPosts} from "../../models/IGetPosts";
 
 interface SocialState {
   name: string
   surname: string
-  posts: IGetPosts[]
-  error: IError
-  loading: boolean
+  errorInfo: IError
   login: boolean
+  posts: IGetPosts[]
+  loading: boolean
 }
 
 const initialState: SocialState = {
   name: '',
   surname: '',
-  posts: [],
-  error: {
+  errorInfo: {
     message: null,
     errorGuilt: 'server'
   },
-  loading: false,
-  login: false
+  login: false,
+  posts: [],
+  loading: false
 }
 
 export const socialSlice = createSlice({
@@ -37,13 +37,13 @@ export const socialSlice = createSlice({
       state.login = action.payload
     },
     setError(state, action: PayloadAction<IError>) {
-      state.error = action.payload
+      state.errorInfo = action.payload
     },
-    setLoading(state, action: PayloadAction<boolean>) {
-      state.loading = action.payload
+    setPosts(state, actions: PayloadAction<IGetPosts[]>) {
+      state.posts = actions.payload
     },
-    setPosts(state, action: PayloadAction<IGetPosts[]>) {
-      state.posts = action.payload
+    setLoading(state, actions: PayloadAction<boolean>) {
+      state.loading = actions.payload
     }
   }
 })
