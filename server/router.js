@@ -16,7 +16,7 @@ router.post('/profile', (req, res) => {
 })
 
 router.get('/posts', (req, res) => {
-  fsHandler.getPosts(req.query.name, req.query.surname, res)
+  fsHandler.getPosts(req.query.name, req.query.surname, res).then()
 })
 
 router.post('/posts', (req, res) => {
@@ -24,7 +24,7 @@ router.post('/posts', (req, res) => {
 })
 
 router.post('/subscribe', (req, res) => {
-  fsHandler.subscribe(req.body.subMail, req.body.name, req.body.surname, res)
+  fsHandler.subscribe(req.body.subMail, req.body.name, req.body.surname, res).then()
 })
 
 router.post('/subscribe/delete', (req, res) => {
