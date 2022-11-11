@@ -1,3 +1,5 @@
+Для запуска сервера, с помощью которого все и работает, нужно перейти в корневую папку проекта и запустить npm run dev
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
