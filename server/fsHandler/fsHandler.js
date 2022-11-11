@@ -80,6 +80,7 @@ const fsHandler = {
         response.status(500).send(fsHandler.err)
       } else {
         if (files) {
+          let success = false
           for (let i = 0; i < files.length; i++) {
             try {
               const JsonFileData = await fs.readFileSync('./server/profiles/' + files[i])
@@ -96,13 +97,9 @@ const fsHandler = {
                       profileData = {...profileData, subscribes: [...profileData.subscribes, subMail]}
                       await fs.writeFileSync(`./server/profiles/${name}${surname}.json`, JSON.stringify(profileData))
                       response.status(200).send('success')
+                      success = true
                       break;
                     }
-                  } else {
-                    fsHandler.err.message = 'Вы пытаетесь подписаться на самого себя'
-                    fsHandler.err.errorGuilt = 'user'
-                    response.status(400).send(fsHandler.err)
-                    break;
                   }
                 } else {
                   fsHandler.err.message = 'Невалидная почта'
@@ -115,6 +112,11 @@ const fsHandler = {
               fsHandler.err.message = e.message
               response.status(500).send(fsHandler.err)
             }
+          }
+          if (!success) {
+            fsHandler.err.message = 'Вы пытаетесь подписаться на самого себя'
+            fsHandler.err.errorGuilt = 'user'
+            response.status(400).send(fsHandler.err)
           }
         }
       }
