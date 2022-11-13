@@ -17,9 +17,11 @@ const fsHandler = {
         if (files.length !== 0) {
           for (let i = 0; i < files.length; i++) {
             try {
-              const data = await fs.readFileSync('./server/posts/' + files[i])
-              if (profileInfo.subscribes.includes(JSON.parse(data.toString()).mail) || profileInfo.mail === JSON.parse(data.toString()).mail) {
-                posts.push(JSON.parse(data.toString()))
+              if (files[i] !== '.gitkeep') {
+                const data = await fs.readFileSync('./server/posts/' + files[i])
+                if (profileInfo.subscribes.includes(JSON.parse(data.toString()).mail) || profileInfo.mail === JSON.parse(data.toString()).mail) {
+                  posts.push(JSON.parse(data.toString()))
+                }
               }
             } catch (e) {
               fsHandler.err.message = e.message
@@ -83,29 +85,31 @@ const fsHandler = {
           let success = false
           for (let i = 0; i < files.length; i++) {
             try {
-              const JsonFileData = await fs.readFileSync('./server/profiles/' + files[i])
-              const fileData = JSON.parse(JsonFileData.toString())
-              if (fileData.mail === subMail && profileData.subscribes.includes(subMail)) {
-                profileData = {...profileData, subscribes: [...profileData.subscribes.filter(sub => sub !== subMail)]}
-                await fs.writeFileSync(`./server/profiles/${name}${surname}.json`, JSON.stringify(profileData))
-                response.status(200).send('success')
-                break;
-              } else {
-                if (fsHandler.validateMail(subMail)) {
-                  if (fileData.name !== name || fileData.name !== surname) {
-                    if (fileData.mail === subMail) {
-                      profileData = {...profileData, subscribes: [...profileData.subscribes, subMail]}
-                      await fs.writeFileSync(`./server/profiles/${name}${surname}.json`, JSON.stringify(profileData))
-                      response.status(200).send('success')
-                      success = true
-                      break;
-                    }
-                  }
-                } else {
-                  fsHandler.err.message = 'Невалидная почта'
-                  fsHandler.err.errorGuilt = 'user'
-                  response.status(400).send(fsHandler.err)
+              if (files[i] !== '.gitkeep') {
+                const JsonFileData = await fs.readFileSync('./server/profiles/' + files[i])
+                const fileData = JSON.parse(JsonFileData.toString())
+                if (fileData.mail === subMail && profileData.subscribes.includes(subMail)) {
+                  profileData = {...profileData, subscribes: [...profileData.subscribes.filter(sub => sub !== subMail)]}
+                  await fs.writeFileSync(`./server/profiles/${name}${surname}.json`, JSON.stringify(profileData))
+                  response.status(200).send('success')
                   break;
+                } else {
+                  if (fsHandler.validateMail(subMail)) {
+                    if (fileData.name !== name || fileData.name !== surname) {
+                      if (fileData.mail === subMail) {
+                        profileData = {...profileData, subscribes: [...profileData.subscribes, subMail]}
+                        await fs.writeFileSync(`./server/profiles/${name}${surname}.json`, JSON.stringify(profileData))
+                        response.status(200).send('success')
+                        success = true
+                        break;
+                      }
+                    }
+                  } else {
+                    fsHandler.err.message = 'Невалидная почта'
+                    fsHandler.err.errorGuilt = 'user'
+                    response.status(400).send(fsHandler.err)
+                    break;
+                  }
                 }
               }
             } catch (e) {
@@ -165,28 +169,30 @@ const fsHandler = {
                         response.status(500).send(fsHandler.err)
                       } else {
                         for (let i = 0; i < files.length; i++) {
-                          fs.readFile(`./server/profiles/` + files[i], (err, data) => {
-                            if (err) {
-                              fsHandler.err.message = err.message
-                              response.status(500).send(fsHandler.err)
-                            } else {
-                              const oldData = JSON.parse(data.toString())
-                              const newSubscribes = [...oldData.subscribes.filter(sub => sub !== profileOldData.mail), changes.mail]
-                              if (oldData.subscribes.includes(profileOldData.mail)) {
-                                fs.writeFile(`./server/profiles/${oldData.name}${oldData.surname}.json`,
-                                  JSON.stringify({...oldData, subscribes: newSubscribes}),
-                                  err => {
-                                    if (err) {
-                                      fsHandler.err.message = err.message
-                                      response.status(500).send(fsHandler.err)
-                                    } else if (files.length - 1 === i) {
-                                      response.status(200).send('success')
+                          if (files[i] !== '.gitkeep') {
+                            fs.readFile(`./server/profiles/` + files[i], (err, data) => {
+                              if (err) {
+                                fsHandler.err.message = err.message
+                                response.status(500).send(fsHandler.err)
+                              } else {
+                                const oldData = JSON.parse(data.toString())
+                                const newSubscribes = [...oldData.subscribes.filter(sub => sub !== profileOldData.mail), changes.mail]
+                                if (oldData.subscribes.includes(profileOldData.mail)) {
+                                  fs.writeFile(`./server/profiles/${oldData.name}${oldData.surname}.json`,
+                                    JSON.stringify({...oldData, subscribes: newSubscribes}),
+                                    err => {
+                                      if (err) {
+                                        fsHandler.err.message = err.message
+                                        response.status(500).send(fsHandler.err)
+                                      } else if (files.length - 1 === i) {
+                                        response.status(200).send('success')
+                                      }
                                     }
-                                  }
-                                )
+                                  )
+                                }
                               }
-                            }
-                          })
+                            })
+                          }
                         }
                       }
                     })
@@ -200,37 +206,38 @@ const fsHandler = {
                         response.status(500).send(fsHandler.err)
                       } else {
                         for (let i = 0; i < files.length; i++) {
-                          console.log(i)
-                          fs.readFile('./server/posts/'+ files[i], (err, data) => {
-                            if (err) {
-                              fsHandler.err.message = err.message
-                              response.status(500).send(fsHandler.err)
-                            } else {
-                              const oldData = JSON.parse(data.toString())
-                              if (oldData.name === profileOldData.name && oldData.surname === profileOldData.surname) {
-                                const newFileData = {...oldData}
-                                console.log(newFileData)
-                                if (changes.name !== profileOldData.name && changes.name) {
-                                  newFileData.name = changes.name
-                                }
-                                if (changes.surname !== profileOldData.surname && changes.surname) {
-                                  newFileData.surname = changes.surname
-                                }
-                                if (changes.mail !== profileOldData.mail && changes.mail) {
-                                  console.log(newFileData.mail, changes.mail)
-                                  newFileData.mail = changes.mail
-                                }
-                                fs.writeFile('./server/posts/' + files[i], JSON.stringify(newFileData), err => {
-                                  if (err) {
-                                    fsHandler.err.message = err.message
-                                    response.status(500).send(fsHandler.err)
-                                  } else {
-                                    response.status(200).send('success')
+                          if (files[i] !== '.gitkeep') {
+                            fs.readFile('./server/posts/' + files[i], (err, data) => {
+                              if (err) {
+                                fsHandler.err.message = err.message
+                                response.status(500).send(fsHandler.err)
+                              } else {
+                                const oldData = JSON.parse(data.toString())
+                                if (oldData.name === profileOldData.name && oldData.surname === profileOldData.surname) {
+                                  const newFileData = {...oldData}
+                                  console.log(newFileData)
+                                  if (changes.name !== profileOldData.name && changes.name) {
+                                    newFileData.name = changes.name
                                   }
-                                })
+                                  if (changes.surname !== profileOldData.surname && changes.surname) {
+                                    newFileData.surname = changes.surname
+                                  }
+                                  if (changes.mail !== profileOldData.mail && changes.mail) {
+                                    console.log(newFileData.mail, changes.mail)
+                                    newFileData.mail = changes.mail
+                                  }
+                                  fs.writeFile('./server/posts/' + files[i], JSON.stringify(newFileData), err => {
+                                    if (err) {
+                                      fsHandler.err.message = err.message
+                                      response.status(500).send(fsHandler.err)
+                                    } else {
+                                      response.status(200).send('success')
+                                    }
+                                  })
+                                }
                               }
-                            }
-                          })
+                            })
+                          }
                         }
                       }
                     })
